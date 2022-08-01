@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: books-servicemonitor
+  # Change this to the namespace the Prometheus instance is running in
+  # namespace: default
+  labels:
+    app: books
+    release: prometheus-grafana 
+spec:
+  selector:
+    matchLabels:
+      # app: books
+      # release: prometheus-grafana
+      app: books
+  endpoints:
+  - port: books
+    interval: 1s
+    path: /metrics
+    

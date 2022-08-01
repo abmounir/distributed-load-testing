@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: books-deployment
+  # namespace: books
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: books
+  template:
+    metadata:
+      labels:
+        app: books
+    spec: 
+        containers:
+        - name: books
+          image: us-east1-docker.pkg.dev/cedar-fragment-329816/bookstore/book:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 1097
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 120m
+              memory: 250Mi
+             
+---
+# service
+apiVersion: v1
+kind: Service
+metadata:
+  name: books-service
+  # namespace: books
+  labels:
+    app: books
+spec:
+  selector:
+    app: books
+  ports:
+    - name: books 
+      protocol: TCP
+      port: 1097
+      targetPort: 1097
+  type: LoadBalancer
+---
+# hpa
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler 
+metadata:
+  name: books-hpa
+  # namespace: books
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: books-deployment
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 25
